@@ -1,14 +1,12 @@
-/* eslint-disable */
+import logo from "./logo.svg";
 import "./App.css";
-import Layouts from "./layouts/routes";
-import { Provider } from "react-redux";
-import { store } from "./store/store";
+import RoutesLayouts from "./routes/index";
 
 function App() {
   return (
-    <Provider store={store}>
-      <Layouts />
-    </Provider>
+    <>
+      <RoutesLayouts />;
+    </>
   );
 }
 
