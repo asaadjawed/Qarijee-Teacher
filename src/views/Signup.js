@@ -9,8 +9,18 @@ import {
   Heading,
   Select,
 } from "@chakra-ui/react";
+import { useForm } from "react-hook-form";
 
 const Signup = () => {
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm();
+
+  const onSubmit = (data) => console.log(data);
+
   return (
     <Box
       display="flex"
@@ -21,21 +31,21 @@ const Signup = () => {
       <Container maxWidth="lg">
         <Heading align="center">Create Your Account!</Heading>
         <Box>
-          <form>
+          <form onSubmit={handleSubmit(onSubmit)}>
             <FormControl my="3">
               <FormLabel>Name:</FormLabel>
-              <Input placeholder="Enter Username" name="username" />
+              <Input placeholder="Enter Username" {...register("username")} />
             </FormControl>
             <FormControl my="3">
               <FormLabel>Email:</FormLabel>
-              <Input placeholder="Enter Email" name="email" />
+              <Input placeholder="Enter Email" {...register("email")} />
             </FormControl>
             <FormControl my="3">
               <FormLabel>Password:</FormLabel>
               <Input
                 type="password"
                 placeholder="Enter Password"
-                name="password"
+                {...register("password")}
               />
             </FormControl>
             <FormControl my="3">
@@ -43,7 +53,7 @@ const Signup = () => {
               <Input
                 type="password"
                 placeholder="Enter Password"
-                name="password"
+                {...register("confirmPassword")}
               />
             </FormControl>
             <FormControl my="3">
@@ -52,18 +62,21 @@ const Signup = () => {
                 type="text"
                 placeholder="Enter Phone Number"
                 name="phone-no"
+                {...register("phoneNumber")}
               />
             </FormControl>
             <FormControl my="3">
               <FormLabel>Choose Courses:</FormLabel>
-              <Select>
+              <Select {...register("courses")}>
                 <option>Course 1</option>
                 <option>Course 2</option>
                 <option>Course 3</option>
               </Select>
             </FormControl>
             <FormControl>
-              <Button w="100%">Submit</Button>
+              <Button type="submit" w="100%">
+                Submit
+              </Button>
             </FormControl>
           </form>
         </Box>
