@@ -46,6 +46,12 @@ const Signup = () => {
       return;
     }
 
+    const allData = {
+      ...data,
+      courses,
+      recitationRecording,
+    };
+
     handleUploadApplicant();
   };
 
