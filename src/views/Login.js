@@ -30,42 +30,11 @@ const Login = () => {
     formState: { errors },
   } = useForm();
 
-  const [recitationRecording, setRecitationRecording] = useState(null);
-  const [courses, setCourses] = useState([]);
-  const [validation, setValidations] = useState({});
-
   // const onSubmit = (data) => console.log(data);
   const onSubmit = (data) => {
     console.log(data);
-    if (!recitationRecording) {
-      validation.recitationRecording = true;
-      return;
-    }
-    if (!courses.length) {
-      validation.courses = true;
-      return;
-    }
-
-    handleUploadApplicant();
   };
 
-  const handleUploadApplicant = () => {
-    const storageRef = ref(storage, `/recitations/${recitationRecording.name}`);
-
-    uploadBytes(storageRef, recitationRecording).then(async (snapshot) => {
-      console.log(snapshot);
-
-      const downloadUrl = await getDownloadURL(
-        ref(storage, `/recitations/${recitationRecording.name}`)
-      );
-      console.log(downloadUrl);
-    });
-  };
-
-  const handleDelete = (itemIndex) => {
-    const deletedCourses = courses.filter((item, index) => index !== itemIndex);
-    setCourses(deletedCourses);
-  };
   return (
     <Container
       maxWidth="lg"
