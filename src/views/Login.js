@@ -20,6 +20,8 @@ import { MdOutlineCancel } from "react-icons/md";
 
 // import firebase from 'firebase';
 import { ref, uploadBytes, storage, getDownloadURL } from "../firebase-config";
+import axios from "axios";
+import { Backend_url } from "../BackEnd";
 
 const Login = () => {
   const {
@@ -31,8 +33,10 @@ const Login = () => {
   } = useForm();
 
   // const onSubmit = (data) => console.log(data);
-  const onSubmit = (data) => {
-    console.log(data);
+  const onSubmit = async (data) => {
+    // console.log(data);
+    const response = await axios.post(`${Backend_url}/auth/login/admin`, data )
+    console.log(response,'response');
   };
 
   return (
