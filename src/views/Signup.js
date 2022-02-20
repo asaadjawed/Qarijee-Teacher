@@ -67,12 +67,7 @@ const Signup = () => {
     setCourses(deletedCourses);
   };
   return (
-    <Box
-      display="flex"
-      justifyContent="center"
-      flexDirection="column"
-      padding="30px 0"
-    >
+    <Box padding="30px 0">
       <Container maxWidth="lg">
         <Heading align="center">Create Your Account!</Heading>
         <Box>
@@ -93,6 +88,9 @@ const Signup = () => {
               <FormLabel>Email:</FormLabel>
               <Input
                 placeholder="Enter Email"
+                focus={{
+                  border: "1px solid red",
+                }}
                 {...register("email", {
                   required: true,
                   pattern:
@@ -286,7 +284,12 @@ const Signup = () => {
               )}
             </FormControl>
             <FormControl>
-              <Button type="submit" w="100%">
+              <Button
+                type="submit"
+                w="100%"
+                bg="brand.primary"
+                color="brand.secondary"
+              >
                 Submit
               </Button>
             </FormControl>
