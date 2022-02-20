@@ -19,6 +19,8 @@ import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { MdOutlineCancel } from "react-icons/md";
 
+// import firebase from 'firebase';
+import { app } from "../firebase";
 const Signup = () => {
   const {
     register,
@@ -29,7 +31,48 @@ const Signup = () => {
 
   const [recitationRecording, setRecitationRecording] = useState(null);
   const [courses, setCourses] = useState([]);
-  const onSubmit = (data) => console.log(data);
+  // const onSubmit = (data) => console.log(data);
+  const onSubmit = (data) => {
+    handleUploadApplicant()
+  }
+
+  ///////////upload file//////
+
+  const handleUploadApplicant = () => {
+    // const resumeFile = applicantData.resume[0];
+
+    const fileUrl = app
+      .storage()
+      .ref("applicants-resume")
+      .child(recitationRecording.name)
+      .put(recitationRecording);
+
+    fileUrl.on(
+      "state_changed",
+      (snapshot) => {
+        //progress
+      },
+      (error) => {
+        // error
+        console.log(error);
+      },
+      () => {
+        // complete
+        const url = app
+          .storage()
+          .ref("applicants-resume")
+          .child(recitationRecording.name)
+          .getDownloadURL()
+          .then((url) => {
+            console.log('url',url);
+            // const applicantDataJSON = handleFormatDataForSend(url);
+            // handleAddNewApplicant(applicantDataJSON);
+          });
+      }
+    );
+  };
+
+
 
   const handleDelete = (itemIndex) => {
     const deletedCourses = courses.filter((item, index) => index !== itemIndex);
@@ -168,6 +211,7 @@ const Signup = () => {
                 onChange={(e) => {
                   setRecitationRecording(e.target.files[0]);
                 }}
+                
               />
             </FormControl>
             <FormControl>
