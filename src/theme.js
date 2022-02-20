@@ -7,7 +7,7 @@ export const theme = extendTheme({
   colors: {
     brand: {
       primary: "#51A5AB",
-      seconday: "#fff",
+      secondary: "#fff",
       placeholder: "rgb(150,150,150)",
       error: "#FF3333",
     },
