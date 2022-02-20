@@ -13,66 +13,54 @@ import {
   RadioGroup,
   Stack,
   HStack,
-  InputGroup,
 } from "@chakra-ui/react";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { MdOutlineCancel } from "react-icons/md";
 
 // import firebase from 'firebase';
-import { app } from "../firebase";
+import { ref, uploadBytes, storage, getDownloadURL } from "../firebase-config";
+
 const Signup = () => {
   const {
     register,
     handleSubmit,
     watch,
+    getValues,
     formState: { errors },
   } = useForm();
 
   const [recitationRecording, setRecitationRecording] = useState(null);
   const [courses, setCourses] = useState([]);
+  const [validation, setValidations] = useState({});
+
   // const onSubmit = (data) => console.log(data);
   const onSubmit = (data) => {
-    handleUploadApplicant()
-  }
+    console.log(data);
+    if (!recitationRecording) {
+      validation.recitationRecording = true;
+      return;
+    }
+    if (!courses.length) {
+      validation.courses = true;
+      return;
+    }
 
-  ///////////upload file//////
-
-  const handleUploadApplicant = () => {
-    // const resumeFile = applicantData.resume[0];
-
-    const fileUrl = app
-      .storage()
-      .ref("applicants-resume")
-      .child(recitationRecording.name)
-      .put(recitationRecording);
-
-    fileUrl.on(
-      "state_changed",
-      (snapshot) => {
-        //progress
-      },
-      (error) => {
-        // error
-        console.log(error);
-      },
-      () => {
-        // complete
-        const url = app
-          .storage()
-          .ref("applicants-resume")
-          .child(recitationRecording.name)
-          .getDownloadURL()
-          .then((url) => {
-            console.log('url',url);
-            // const applicantDataJSON = handleFormatDataForSend(url);
-            // handleAddNewApplicant(applicantDataJSON);
-          });
-      }
-    );
+    handleUploadApplicant();
   };
 
+  const handleUploadApplicant = () => {
+    const storageRef = ref(storage, `/recitations/${recitationRecording.name}`);
 
+    uploadBytes(storageRef, recitationRecording).then(async (snapshot) => {
+      console.log(snapshot);
+
+      const downloadUrl = await getDownloadURL(
+        ref(storage, `/recitations/${recitationRecording.name}`)
+      );
+      console.log(downloadUrl);
+    });
+  };
 
   const handleDelete = (itemIndex) => {
     const deletedCourses = courses.filter((item, index) => index !== itemIndex);
@@ -91,36 +79,69 @@ const Signup = () => {
           <form onSubmit={handleSubmit(onSubmit)}>
             <FormControl my="3">
               <FormLabel>Name:</FormLabel>
-              <Input placeholder="Enter Username" {...register("username")} />
+              <Input
+                placeholder="Enter Username"
+                {...register("username", { required: true })}
+              />
+              {errors.username?.type === "required" && (
+                <FormLabel color="brand.error" my="2">
+                  Username Required.
+                </FormLabel>
+              )}
             </FormControl>
             <FormControl my="3">
               <FormLabel>Email:</FormLabel>
-              <Input placeholder="Enter Email" {...register("email")} />
+              <Input
+                placeholder="Enter Email"
+                {...register("email", {
+                  required: true,
+                  pattern:
+                    /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+                })}
+              />
+              {errors.email?.type === "required" && (
+                <FormLabel color="brand.error" my="2">
+                  Email Required.
+                </FormLabel>
+              )}
+              {errors.email?.type === "pattern" && (
+                <FormLabel color="brand.error" my="2">
+                  Email is Invalid.
+                </FormLabel>
+              )}
             </FormControl>
             <FormControl my="3">
               <FormLabel>Password:</FormLabel>
               <Input
                 type="password"
                 placeholder="Enter Password"
-                {...register("password")}
+                {...register("password", { required: true, minLength: 8 })}
               />
+              {errors.password?.type === "required" && (
+                <FormLabel color="brand.error" my="2">
+                  Password Required.
+                </FormLabel>
+              )}
+              {errors.password?.type === "minLength" && (
+                <FormLabel color="brand.error" my="2">
+                  Password should have atlease 8 characters long.
+                </FormLabel>
+              )}
             </FormControl>
-            <FormControl my="3">
-              <FormLabel>Confirm Password:</FormLabel>
-              <Input
-                type="password"
-                placeholder="Enter Password"
-                {...register("confirmPassword")}
-              />
-            </FormControl>
+
             <FormControl my="3">
               <FormLabel>Phone No:</FormLabel>
               <Input
                 type="text"
                 placeholder="Enter Phone Number"
                 name="phone-no"
-                {...register("phoneNumber")}
+                {...register("phoneNumber", { required: true })}
               />
+              {errors.phoneNumber?.type === "required" && (
+                <FormLabel color="brand.error" my="2">
+                  Please enter your phone no.
+                </FormLabel>
+              )}
             </FormControl>
             <FormControl my="3">
               <FormLabel>Choose Courses:</FormLabel>
@@ -153,12 +174,18 @@ const Signup = () => {
                 onChange={(e) => {
                   if (!courses.includes(e.target.value))
                     setCourses([...courses, e.target.value]);
+                  delete validation.courses;
                 }}
               >
                 <option>Course 1</option>
                 <option>Course 2</option>
                 <option>Course 3</option>
               </Select>
+              {validation?.courses && (
+                <FormLabel color="brand.error" my="2">
+                  Select course that you want to teach.
+                </FormLabel>
+              )}
             </FormControl>
 
             <FormControl my="3">
@@ -166,17 +193,26 @@ const Signup = () => {
               <Textarea
                 placeholder="Enter your short intro.."
                 height="100px"
-                {...register("about")}
+                {...register("about", { required: true })}
               />
+              {errors.about?.type === "required" && (
+                <FormLabel color="brand.error" my="2">
+                  Please tell use about you something.
+                </FormLabel>
+              )}
             </FormControl>
-
             <FormControl my="3">
               <FormLabel>Your Age:</FormLabel>
               <Input
                 type="number"
                 placeholder="Enter your age"
-                {...register("age")}
+                {...register("age", { required: true })}
               />
+              {errors.age?.type === "required" && (
+                <FormLabel color="brand.error" my="2">
+                  Please enter your age.
+                </FormLabel>
+              )}
             </FormControl>
             <FormControl my="3">
               <FormLabel>Country:</FormLabel>
@@ -185,34 +221,69 @@ const Signup = () => {
                 placeholder="Enter your country"
                 {...register("country")}
               />
+              {errors.country?.type === "required" && (
+                <FormLabel color="brand.error" my="2">
+                  Please enter your country.
+                </FormLabel>
+              )}
             </FormControl>
             <FormControl my="3">
               <FormLabel>City:</FormLabel>
               <Input
                 type="text"
                 placeholder="Enter your city"
-                {...register("city")}
+                {...register("city", { required: true })}
               />
+              {errors.city?.type === "required" && (
+                <FormLabel color="brand.error" my="2">
+                  Please enter your city.
+                </FormLabel>
+              )}
             </FormControl>
             <FormControl my="3">
               <FormLabel>Gender:</FormLabel>
-              <RadioGroup {...register("gender")}>
+              <RadioGroup>
                 <Stack direction="row">
-                  <Radio value="male">Male</Radio>
-                  <Radio value="female">Female</Radio>
-                  <Radio value="other">Other</Radio>
+                  <Radio
+                    value="male"
+                    {...register("gender", { required: true })}
+                  >
+                    Male
+                  </Radio>
+                  <Radio
+                    value="female"
+                    {...register("gender", { required: true })}
+                  >
+                    Female
+                  </Radio>
+                  <Radio
+                    value="other"
+                    {...register("gender", { required: true })}
+                  >
+                    Other
+                  </Radio>
                 </Stack>
               </RadioGroup>
+              {errors.gender?.type === "required" && (
+                <FormLabel color="brand.error" my="2">
+                  Please specify your gender.
+                </FormLabel>
+              )}
             </FormControl>
             <FormControl my="3">
               <FormLabel>Recitation:</FormLabel>
               <input
                 type="file"
                 onChange={(e) => {
+                  delete validation.recitationRecording;
                   setRecitationRecording(e.target.files[0]);
                 }}
-                
               />
+              {validation?.recitationRecording && (
+                <FormLabel color="brand.error" my="2">
+                  Please upload your recitation recording
+                </FormLabel>
+              )}
             </FormControl>
             <FormControl>
               <Button type="submit" w="100%">
