@@ -17,9 +17,11 @@ import {
 import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { MdOutlineCancel } from "react-icons/md";
+import { Backend_url } from "../BackEnd"
 
 // import firebase from 'firebase';
 import { ref, uploadBytes, storage, getDownloadURL } from "../firebase-config";
+import axios from "axios";
 
 const Signup = () => {
   const {
@@ -35,8 +37,9 @@ const Signup = () => {
   const [validation, setValidations] = useState({});
 
   // const onSubmit = (data) => console.log(data);
-  const onSubmit = (data) => {
-    console.log(data);
+  const onSubmit = async (data) => {
+    // console.log(data);
+
     if (!recitationRecording) {
       validation.recitationRecording = true;
       return;
@@ -46,26 +49,44 @@ const Signup = () => {
       return;
     }
 
+    
+    const url = await  handleUploadApplicant();
+
     const allData = {
       ...data,
       courses,
-      recitationRecording,
+      recitation:url,
+      age:Number(data.age),
+      availableSlots: []
     };
+    console.log(allData)
 
-    handleUploadApplicant();
+
+    const response = await axios({
+      method:"POST",
+      data:allData,
+      url:`${Backend_url}/auth/signup/teacher`
+    })
+
+
+    // const {sendData} = await axios.post(`${Backend_url}/auth/signup/teacher`,allData)
+    console.log('sendData',response);
+
   };
 
-  const handleUploadApplicant = () => {
+  const handleUploadApplicant = async () => {
     const storageRef = ref(storage, `/recitations/${recitationRecording.name}`);
 
-    uploadBytes(storageRef, recitationRecording).then(async (snapshot) => {
+    const url = await uploadBytes(storageRef, recitationRecording).then(async (snapshot) => {
       console.log(snapshot);
 
       const downloadUrl = await getDownloadURL(
         ref(storage, `/recitations/${recitationRecording.name}`)
       );
-      console.log(downloadUrl);
+      return downloadUrl;
     });
+
+    return url;
   };
 
   const handleDelete = (itemIndex) => {
@@ -82,7 +103,7 @@ const Signup = () => {
               <FormLabel>Name:</FormLabel>
               <Input
                 placeholder="Enter Username"
-                {...register("username", { required: true })}
+                {...register("name", { required: true })}
               />
               {errors.username?.type === "required" && (
                 <FormLabel color="brand.error" my="2">
@@ -197,7 +218,7 @@ const Signup = () => {
               <Textarea
                 placeholder="Enter your short intro.."
                 height="100px"
-                {...register("about", { required: true })}
+                {...register("intro", { required: true })}
               />
               {errors.about?.type === "required" && (
                 <FormLabel color="brand.error" my="2">
