@@ -6,8 +6,9 @@ import "@fontsource/raleway";
 export const theme = extendTheme({
   colors: {
     brand: {
-      primary: "#8799EF",
+      primary: "#51A5AB",
       seconday: "#fff",
+      placeholder: "rgb(150,150,150)",
       error: "#FF3333",
     },
   },

@@ -8,8 +8,14 @@ import {
   Text,
   Heading,
   Select,
+  Textarea,
+  Radio,
+  RadioGroup,
+  Stack,
+  InputGroup,
 } from "@chakra-ui/react";
 import { useForm } from "react-hook-form";
+import { useState } from "react";
 
 const Signup = () => {
   const {
@@ -19,6 +25,7 @@ const Signup = () => {
     formState: { errors },
   } = useForm();
 
+  const [recitationRecording, setRecitationRecording] = useState(null);
   const onSubmit = (data) => console.log(data);
 
   return (
@@ -26,7 +33,7 @@ const Signup = () => {
       display="flex"
       justifyContent="center"
       flexDirection="column"
-      height="100vh"
+      padding="30px 0"
     >
       <Container maxWidth="lg">
         <Heading align="center">Create Your Account!</Heading>
@@ -72,6 +79,58 @@ const Signup = () => {
                 <option>Course 2</option>
                 <option>Course 3</option>
               </Select>
+            </FormControl>
+
+            <FormControl my="3">
+              <FormLabel>About You:</FormLabel>
+              <Textarea
+                placeholder="Enter your short intro.."
+                height="100px"
+                {...register("about")}
+              />
+            </FormControl>
+
+            <FormControl my="3">
+              <FormLabel>Your Age:</FormLabel>
+              <Input
+                type="number"
+                placeholder="Enter your age"
+                {...register("age")}
+              />
+            </FormControl>
+            <FormControl my="3">
+              <FormLabel>Country:</FormLabel>
+              <Input
+                type="text"
+                placeholder="Enter your country"
+                {...register("country")}
+              />
+            </FormControl>
+            <FormControl my="3">
+              <FormLabel>City:</FormLabel>
+              <Input
+                type="text"
+                placeholder="Enter your city"
+                {...register("city")}
+              />
+            </FormControl>
+            <FormControl my="3">
+              <FormLabel>Gender:</FormLabel>
+              <RadioGroup {...register("gender")}>
+                <Stack direction="row">
+                  <Radio value="male">Male</Radio>
+                  <Radio value="female">Female</Radio>
+                </Stack>
+              </RadioGroup>
+            </FormControl>
+            <FormControl my="3">
+              <FormLabel>Recitation:</FormLabel>
+              <input
+                type="file"
+                onChange={(e) => {
+                  setRecitationRecording(e.target.files[0]);
+                }}
+              />
             </FormControl>
             <FormControl>
               <Button type="submit" w="100%">
