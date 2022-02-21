@@ -5,7 +5,7 @@ import RoutesLayouts from "./routes/index";
 function App() {
   return (
     <>
-      <RoutesLayouts />;
+      <RoutesLayouts />
     </>
   );
 }

@@ -14,10 +14,10 @@ import {
   Stack,
   HStack,
 } from "@chakra-ui/react";
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { useState } from "react";
 import { MdOutlineCancel } from "react-icons/md";
-import { Backend_url } from "../BackEnd"
+import { Backend_url } from "../BackEnd";
 
 // import firebase from 'firebase';
 import { ref, uploadBytes, storage, getDownloadURL } from "../firebase-config";
@@ -29,62 +29,84 @@ const Signup = () => {
     handleSubmit,
     watch,
     getValues,
+    control,
     formState: { errors },
   } = useForm();
+
+  const { fields, append, prepend, remove, swap, move, insert } = useFieldArray(
+    {
+      control,
+      name: "availableSlots",
+    }
+  );
 
   const [recitationRecording, setRecitationRecording] = useState(null);
   const [courses, setCourses] = useState([]);
   const [validation, setValidations] = useState({});
+  const [responseError, setResponeError] = useState(null);
 
   // const onSubmit = (data) => console.log(data);
   const onSubmit = async (data) => {
     // console.log(data);
+    try {
+      if (!recitationRecording) {
+        validation.recitationRecording = true;
+        return;
+      }
+      if (!courses.length) {
+        validation.courses = true;
+        return;
+      }
 
-    if (!recitationRecording) {
-      validation.recitationRecording = true;
-      return;
+      const url = await handleUploadApplicant();
+
+      console.log(data.availableSlots);
+
+      const slots = data.availableSlots.map((item) => {
+        return {
+          day: item.day,
+          hours: item.time.split(","),
+        };
+      });
+      console.log(slots);
+
+      const allData = {
+        ...data,
+        courses,
+        recitation: url,
+        age: Number(data.age),
+        availableSlots: slots,
+      };
+      console.log(allData);
+
+      const response = await axios({
+        method: "POST",
+        data: allData,
+        url: `${Backend_url}/auth/signup/teacher`,
+      });
+
+      // const {sendData} = await axios.post(`${Backend_url}/auth/signup/teacher`,allData)
+      console.log("sendData", response);
+    } catch (error) {
+      if (error.response.data.message === "Account already exists.") {
+        setResponeError("Account already exists.");
+      }
     }
-    if (!courses.length) {
-      validation.courses = true;
-      return;
-    }
-
-    
-    const url = await  handleUploadApplicant();
-
-    const allData = {
-      ...data,
-      courses,
-      recitation:url,
-      age:Number(data.age),
-      availableSlots: []
-    };
-    console.log(allData)
-
-
-    const response = await axios({
-      method:"POST",
-      data:allData,
-      url:`${Backend_url}/auth/signup/teacher`
-    })
-
-
-    // const {sendData} = await axios.post(`${Backend_url}/auth/signup/teacher`,allData)
-    console.log('sendData',response);
-
   };
 
   const handleUploadApplicant = async () => {
     const storageRef = ref(storage, `/recitations/${recitationRecording.name}`);
 
-    const url = await uploadBytes(storageRef, recitationRecording).then(async (snapshot) => {
-      console.log(snapshot);
+    const url = await uploadBytes(storageRef, recitationRecording).then(
+      async (snapshot) => {
+        console.log(snapshot);
 
-      const downloadUrl = await getDownloadURL(
-        ref(storage, `/recitations/${recitationRecording.name}`)
-      );
-      return downloadUrl;
-    });
+        const downloadUrl = await getDownloadURL(
+          ref(storage, `/recitations/${recitationRecording.name}`)
+        );
+        return downloadUrl;
+      }
+    );
 
     return url;
   };
@@ -309,6 +331,65 @@ const Signup = () => {
                   Please upload your recitation recording
                 </FormLabel>
               )}
+            </FormControl>
+            <FormControl my="3">
+              <FormLabel>Time Slots:</FormLabel>
+
+              {fields.map((field, index) => (
+                <>
+                  <FormControl my="3">
+                    <FormLabel>Day:</FormLabel>
+                    <Select {...register(`availableSlots.${index}.day`)}>
+                      <option value="monday">Monday</option>
+                      <option value="tuesday">Tuesday</option>
+                      <option value="wednesday">Wednesday</option>
+                      <option value="thursday">Thursday</option>
+                      <option value="friday">Friday</option>
+                      <option value="saturday">Saturday</option>
+                      <option value="sunday">Sunday</option>
+                    </Select>
+                  </FormControl>
+
+                  <FormControl>
+                    <FormLabel>Time:</FormLabel>
+                    <Input
+                      type="text"
+                      placeholder="Enter your time slots"
+                      {...register(`availableSlots.${index}.time`, {
+                        min: 0,
+                        max: 23,
+                      })}
+                    />
+                    <Text my="2" fontSize="xs">
+                      Enter time slots seprated by comma, 0,3,6, 20 means
+                      0=12AM, 3=3AM, 6=6AM, 20=8PM
+                    </Text>
+                  </FormControl>
+                  {errors.availableSlots && (
+                    <>
+                      {errors?.availableSlots[index]?.time?.type === "min" && (
+                        <FormLabel color="brand.error" my="2">
+                          You have entered wrong time slots, please check.
+                        </FormLabel>
+                      )}
+                      {errors?.availableSlots[index]?.time?.type === "max" && (
+                        <FormLabel color="brand.error" my="2">
+                          You have entered wrong time slots, please check.
+                        </FormLabel>
+                      )}
+                    </>
+                  )}
+                </>
+              ))}
+              <Text
+                onClick={() => append()}
+                color="brand.primary"
+                cursor="pointer"
+                my="3"
+              >
+                Click to add Time Slotes
+              </Text>
+              {console.log(errors)}
             </FormControl>
             <FormControl>
               <Button
