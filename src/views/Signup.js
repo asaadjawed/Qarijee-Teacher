@@ -18,6 +18,8 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { useState } from "react";
 import { MdOutlineCancel } from "react-icons/md";
 import { Backend_url } from "../BackEnd";
+import AlertErr from "../components/AlertErr";
+import Swal from "sweetalert";
 
 // import firebase from 'firebase';
 import { ref, uploadBytes, storage, getDownloadURL } from "../firebase-config";
@@ -43,7 +45,6 @@ const Signup = () => {
   const [recitationRecording, setRecitationRecording] = useState(null);
   const [courses, setCourses] = useState([]);
   const [validation, setValidations] = useState({});
-  const [responseError, setResponeError] = useState(null);
 
   // const onSubmit = (data) => console.log(data);
   const onSubmit = async (data) => {
@@ -89,7 +90,11 @@ const Signup = () => {
       console.log("sendData", response);
     } catch (error) {
       if (error.response.data.message === "Account already exists.") {
-        setResponeError("Account already exists.");
+        Swal({
+          icon: "error",
+          title: "Oops...",
+          text: "Account already exist!",
+        });
       }
     }
   };
@@ -225,8 +230,7 @@ const Signup = () => {
                 }}
               >
                 <option value="tajweed">Tajweed</option>
-                <option>Course 2</option>
-                <option>Course 3</option>
+                <option value="course 2">Course 2</option>
               </Select>
               {validation?.courses && (
                 <FormLabel color="brand.error" my="2">
