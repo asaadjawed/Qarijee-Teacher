@@ -224,7 +224,7 @@ const Signup = () => {
                   delete validation.courses;
                 }}
               >
-                <option>Course 1</option>
+                <option value="tajweed">Tajweed</option>
                 <option>Course 2</option>
                 <option>Course 3</option>
               </Select>

@@ -14,12 +14,16 @@ import {
   Stack,
   HStack,
 } from "@chakra-ui/react";
-import { useForm } from "react-hook-form";
+import { set, useForm } from "react-hook-form";
 import { useState } from "react";
 import { MdOutlineCancel } from "react-icons/md";
 
 // import firebase from 'firebase';
 import { ref, uploadBytes, storage, getDownloadURL } from "../firebase-config";
+import axios from "axios";
+import { Backend_url } from "../BackEnd";
+import ErrALert from "../components/AlertErr";
+import swal from "sweetalert";
 
 const Login = () => {
   const {
@@ -30,9 +34,33 @@ const Login = () => {
     formState: { errors },
   } = useForm();
 
+  const [error, setError] = useState({
+    isError: false,
+    message: "",
+  });
+
   // const onSubmit = (data) => console.log(data);
-  const onSubmit = (data) => {
-    console.log(data);
+  const onSubmit = async (data) => {
+    // console.log(data);
+    try {
+      const response = await axios.post(
+        `${Backend_url}/auth/login/teacher`,
+        data
+      );
+
+      console.log(response, "response");
+      swal({
+        title: 'Success',
+        text: "You are login",
+        icon: 'success',
+      })
+    } catch (error) {
+      if (error.response.data.message === "User does not exist.")
+        setError({
+          isError: true,
+          message: "User does not exist.",
+        });
+    }
   };
 
   return (
@@ -46,6 +74,7 @@ const Login = () => {
       <Heading align="center">Login Your Account!</Heading>
       <Box>
         <form onSubmit={handleSubmit(onSubmit)}>
+          {error.isError && <ErrALert text={error.message} />}
           <FormControl my="3">
             <FormLabel>Email:</FormLabel>
             <Input
