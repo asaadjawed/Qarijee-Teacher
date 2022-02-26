@@ -15,7 +15,7 @@ import {
   HStack,
 } from "@chakra-ui/react";
 import { useForm, useFieldArray } from "react-hook-form";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MdOutlineCancel } from "react-icons/md";
 import { Backend_url } from "../BackEnd";
 import AlertErr from "../components/AlertErr";
@@ -46,6 +46,7 @@ const Signup = () => {
   const [courses, setCourses] = useState([]);
   const [validation, setValidations] = useState({});
 
+  const [allCourses, setAllCourses] = useState([]);
   // const onSubmit = (data) => console.log(data);
   const onSubmit = async (data) => {
     // console.log(data);
@@ -120,6 +121,23 @@ const Signup = () => {
     const deletedCourses = courses.filter((item, index) => index !== itemIndex);
     setCourses(deletedCourses);
   };
+
+  const getAllCourses = async () => {
+    const allCourses = await axios({
+      url: `${Backend_url}/course/all`,
+      method: "GET",
+      headers: {
+        Authorization:
+          "Bearer 2aasssdaa1dd#ss$uufll6tt5a4n%@5g4m#a$i^l6.ecyo4m5453$#%#5t2as@#$we5f4lk@#65f65w2!214#$%",
+      },
+    });
+    setAllCourses(allCourses.data);
+  };
+
+  useEffect(() => {
+    getAllCourses();
+  }, []);
+
   return (
     <Box padding="30px 0">
       <Container maxWidth="lg">
@@ -229,8 +247,9 @@ const Signup = () => {
                   delete validation.courses;
                 }}
               >
-                <option value="tajweed">Tajweed</option>
-                <option value="course 2">Course 2</option>
+                {allCourses.map((item, key) => {
+                  return <option key={key}>{item.name}</option>;
+                })}
               </Select>
               {validation?.courses && (
                 <FormLabel color="brand.error" my="2">
@@ -394,6 +413,18 @@ const Signup = () => {
                 Click to add Time Slotes
               </Text>
               {console.log(errors)}
+            </FormControl>
+            <FormControl my="3">
+              <FormLabel>Room Link:</FormLabel>
+              <Input
+                placeholder="Enter Room Link"
+                {...register("roomLink", { required: true })}
+              />
+              {errors.roomLink?.type === "required" && (
+                <FormLabel color="brand.error" my="2">
+                  Room Link Required.
+                </FormLabel>
+              )}
             </FormControl>
             <FormControl>
               <Button

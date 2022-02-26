@@ -17,6 +17,7 @@ import {
 import { set, useForm } from "react-hook-form";
 import { useState } from "react";
 import { MdOutlineCancel } from "react-icons/md";
+import { useNavigate } from "react-router-dom";
 
 // import firebase from 'firebase';
 import { ref, uploadBytes, storage, getDownloadURL } from "../firebase-config";
@@ -39,6 +40,8 @@ const Login = () => {
     message: "",
   });
 
+  let navigate = useNavigate();
+
   // const onSubmit = (data) => console.log(data);
   const onSubmit = async (data) => {
     // console.log(data);
@@ -50,10 +53,12 @@ const Login = () => {
 
       console.log(response, "response");
       swal({
-        title: 'Success',
+        title: "Success",
         text: "You are login",
-        icon: 'success',
-      })
+        icon: "success",
+      });
+
+      navigate("/dashboard");
     } catch (error) {
       if (error.response.data.message === "User does not exist.")
         setError({
