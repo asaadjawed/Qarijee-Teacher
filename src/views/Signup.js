@@ -14,17 +14,19 @@ import {
   Stack,
   HStack,
 } from "@chakra-ui/react";
+import { Spinner } from '@chakra-ui/react'
 import { useForm, useFieldArray } from "react-hook-form";
 import { useEffect, useState } from "react";
 import { MdOutlineCancel } from "react-icons/md";
 import { Backend_url } from "../BackEnd";
 import AlertErr from "../components/AlertErr";
-import Swal from "sweetalert";
-
+import swal from "sweetalert";
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from 'react-redux';
 // import firebase from 'firebase';
 import { ref, uploadBytes, storage, getDownloadURL } from "../firebase-config";
 import axios from "axios";
-
+import { login } from "../store/authSlice";
 const Signup = () => {
   const {
     register,
@@ -47,9 +49,12 @@ const Signup = () => {
   const [validation, setValidations] = useState({});
 
   const [allCourses, setAllCourses] = useState([]);
+  const [loading,setLoading] = useState(false);
+  let navigate = useNavigate();
+  const dispatch = useDispatch();
+
   // const onSubmit = (data) => console.log(data);
   const onSubmit = async (data) => {
-    // console.log(data);
     try {
       if (!recitationRecording) {
         validation.recitationRecording = true;
@@ -60,6 +65,7 @@ const Signup = () => {
         return;
       }
 
+      setLoading(true);
       const url = await handleUploadApplicant();
 
       console.log(data.availableSlots);
@@ -85,13 +91,32 @@ const Signup = () => {
         method: "POST",
         data: allData,
         url: `${Backend_url}/auth/signup/teacher`,
-      });
+      })
 
-      // const {sendData} = await axios.post(`${Backend_url}/auth/signup/teacher`,allData)
-      console.log("sendData", response);
+      if(response.data.statusCode===400)
+      {
+        swal.fire({
+          message:"Account Already Exist"
+        })
+        return 
+      }
+      const loginResponse = await axios({
+        method: "POST",
+        data: {
+          email:response.data.email,
+          password:allData.password
+        },
+        url: `${Backend_url}/auth/login/teacher`,
+      })
+      dispatch(login(loginResponse));
+
+     if(response){
+       setLoading("success");
+     }
+
     } catch (error) {
       if (error.response.data.message === "Account already exists.") {
-        Swal({
+        swal({
           icon: "error",
           title: "Oops...",
           text: "Account already exist!",
@@ -242,13 +267,16 @@ const Signup = () => {
               </HStack>
               <Select
                 onChange={(e) => {
+                  if(e?.target.value==="Select a course"){return}
+                  console.log('e.target.value', e.target.value)
                   if (!courses.includes(e.target.value))
                     setCourses([...courses, e.target.value]);
                   delete validation.courses;
                 }}
               >
+                <option key={0}>{"Select a course"}</option>
                 {allCourses.map((item, key) => {
-                  return <option key={key}>{item.name}</option>;
+                  return <option key={key+1}>{item.name}</option>;
                 })}
               </Select>
               {validation?.courses && (
@@ -441,6 +469,15 @@ const Signup = () => {
                 color="brand.secondary"
               >
                 Submit
+                {
+                  loading===true ? (<Spinner />) : loading==="success"? (swal({
+                      title: "Success",
+                      text: "You are Register",
+                      icon: "success",
+                  }).then(()=>{
+                    navigate('/login')
+                  })):""
+                }
               </Button>
             </FormControl>
           </form>
