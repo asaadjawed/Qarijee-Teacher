@@ -478,19 +478,15 @@ const Signup = () => {
                 color="brand.secondary"
               >
                 Submit
-                {loading === true ? (
-                  <Spinner />
-                ) : loading === "success" ? (
-                  swal({
-                    title: "Success",
-                    text: "You are Register",
-                    icon: "success",
-                  }).then(() => {
-                    navigate("/login");
-                  })
-                ) : (
-                  ""
-                )}
+                {
+                  loading===true ? (<Spinner />) : loading==="success"? (swal({
+                      title: "Success",
+                      text: "You are Register",
+                      icon: "success",
+                  }).then(()=>{
+                    navigate("/pendingRequest");
+                  })):""
+                }
               </Button>
             </FormControl>
           </form>
