@@ -14,7 +14,7 @@ import {
   Stack,
   HStack,
 } from "@chakra-ui/react";
-import { Spinner } from '@chakra-ui/react'
+import { Spinner } from "@chakra-ui/react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { useEffect, useState } from "react";
 import { MdOutlineCancel } from "react-icons/md";
@@ -22,7 +22,7 @@ import { Backend_url } from "../BackEnd";
 import AlertErr from "../components/AlertErr";
 import swal from "sweetalert";
 import { useNavigate } from "react-router-dom";
-import { useDispatch } from 'react-redux';
+import { useDispatch } from "react-redux";
 // import firebase from 'firebase';
 import { ref, uploadBytes, storage, getDownloadURL } from "../firebase-config";
 import axios from "axios";
@@ -49,7 +49,7 @@ const Signup = () => {
   const [validation, setValidations] = useState({});
 
   const [allCourses, setAllCourses] = useState([]);
-  const [loading,setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   let navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -65,11 +65,21 @@ const Signup = () => {
         return;
       }
 
+      if (data.availableSlots.length === 0) {
+        console.log("testttt");
+        swal({
+          icon: "error",
+          title: "Error",
+          text: "Please add your available slots",
+        });
+        return;
+      }
+
       setLoading(true);
       const url = await handleUploadApplicant();
 
       console.log(data.availableSlots);
-      
+
       const slots = data.availableSlots.map((item) => {
         return {
           day: item.day,
@@ -91,31 +101,29 @@ const Signup = () => {
         method: "POST",
         data: allData,
         url: `${Backend_url}/auth/signup/teacher`,
-      })
+      });
 
-      if(response.data.statusCode===400)
-      {
+      if (response.data.statusCode === 400) {
         swal.fire({
-          message:"Account Already Exist"
-        })
-        return 
+          message: "Account Already Exist",
+        });
+        return;
       }
       const loginResponse = await axios({
         method: "POST",
         data: {
-          email:response.data.email,
-          password:allData.password
+          email: response.data.email,
+          password: allData.password,
         },
         url: `${Backend_url}/auth/login/teacher`,
-      })
+      });
       dispatch(login(loginResponse));
 
-     if(response){
-       setLoading("success");
-     }
-
+      if (response) {
+        setLoading("success");
+      }
     } catch (error) {
-      if (error.response.data.message === "Account already exists.") {
+      if (error.response?.data?.message === "Account already exists.") {
         swal({
           icon: "error",
           title: "Oops...",
@@ -267,8 +275,10 @@ const Signup = () => {
               </HStack>
               <Select
                 onChange={(e) => {
-                  if(e?.target.value==="Select a course"){return}
-                  console.log('e.target.value', e.target.value)
+                  if (e?.target.value === "Select a course") {
+                    return;
+                  }
+                  console.log("e.target.value", e.target.value);
                   if (!courses.includes(e.target.value))
                     setCourses([...courses, e.target.value]);
                   delete validation.courses;
@@ -276,7 +286,7 @@ const Signup = () => {
               >
                 <option key={0}>{"Select a course"}</option>
                 {allCourses.map((item, key) => {
-                  return <option key={key+1}>{item.name}</option>;
+                  return <option key={key + 1}>{item.name}</option>;
                 })}
               </Select>
               {validation?.courses && (
@@ -447,7 +457,6 @@ const Signup = () => {
               >
                 Click to add Time Slotes
               </Text>
-              {console.log(errors)}
             </FormControl>
             <FormControl my="3">
               <FormLabel>Room Link:</FormLabel>
@@ -469,15 +478,19 @@ const Signup = () => {
                 color="brand.secondary"
               >
                 Submit
-                {
-                  loading===true ? (<Spinner />) : loading==="success"? (swal({
-                      title: "Success",
-                      text: "You are Register",
-                      icon: "success",
-                  }).then(()=>{
-                    navigate('/login')
-                  })):""
-                }
+                {loading === true ? (
+                  <Spinner />
+                ) : loading === "success" ? (
+                  swal({
+                    title: "Success",
+                    text: "You are Register",
+                    icon: "success",
+                  }).then(() => {
+                    navigate("/login");
+                  })
+                ) : (
+                  ""
+                )}
               </Button>
             </FormControl>
           </form>
