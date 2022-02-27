@@ -63,7 +63,7 @@ const Signup = () => {
       const url = await handleUploadApplicant();
 
       console.log(data.availableSlots);
-
+      
       const slots = data.availableSlots.map((item) => {
         return {
           day: item.day,
@@ -150,7 +150,7 @@ const Signup = () => {
                 placeholder="Enter Username"
                 {...register("name", { required: true })}
               />
-              {errors.username?.type === "required" && (
+              {errors.name?.type === "required" && (
                 <FormLabel color="brand.error" my="2">
                   Username Required.
                 </FormLabel>
@@ -381,6 +381,7 @@ const Signup = () => {
                       {...register(`availableSlots.${index}.time`, {
                         min: 0,
                         max: 23,
+                        required: true,
                       })}
                     />
                     <Text my="2" fontSize="xs">
@@ -398,6 +399,12 @@ const Signup = () => {
                       {errors?.availableSlots[index]?.time?.type === "max" && (
                         <FormLabel color="brand.error" my="2">
                           You have entered wrong time slots, please check.
+                        </FormLabel>
+                      )}
+                      {errors?.availableSlots[index]?.time?.type ===
+                        "required" && (
+                        <FormLabel color="brand.error" my="2">
+                          Time Slots is required
                         </FormLabel>
                       )}
                     </>
