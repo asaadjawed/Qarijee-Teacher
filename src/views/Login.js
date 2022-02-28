@@ -59,6 +59,14 @@ const Login = () => {
       });
 
       navigate("/dashboard");
+
+      const getClassroomByTeacher = await axios({
+        url: `${Backend_url}/classroom/teacher`,
+        method: "GET",
+        jwt: response.data.jwt
+      }).then((response)=>{
+        console.log(response,'check');
+      }) 
     } catch (error) {
       if (error.response.data.message === "User does not exist.")
         setError({
