@@ -94,6 +94,7 @@ const Signup = () => {
         recitation: url,
         age: Number(data.age),
         availableSlots: slots,
+        isHired:false,
       };
       console.log(allData);
 
